@@ -4,60 +4,61 @@
 
 const fs = require('fs');
 
-// Instructions
-
+// Instructions:
 const HLT  = 0b00011011; // HaLT CPU
 const LDI  = 0b00000100; //  LoaD Immediate?
 const MUL  = 0b00000101; // MULtiply
 const PRN  = 0b00000110; // PRint Number
-const PSH  = 0b00000010; // P[U]SH mem/rom stack
+const PSH  = 0b00000010; // P[U]SH mem/ram stack
+const POP  = 0b00000010; // P[U]SH mem/ram stack
+
 /**
  * Class for simulating a simple Computer (CPU & memory)
  */
 class CPU {
 
-    /**
-     * Initialize the CPU
-     */
-    constructor(ram) {
-        this.ram = ram;
+  /**
+  * Initialize the CPU
+  */
+  constructor(ram) {
+    this.ram = ram;
+    this.reg = new Array(8).fill(0); // General-purpose registers
+    this.reg[7] = 0xF8; //Init stack pointer to F8 if empty
 
-        this.reg = new Array(8).fill(0); // General-purpose registers
-        this.reg[7] = 0xF8; //Init stack pointer to F8 if empty
+    // Special-purpose registers
+    this.reg.PC = 0; // Program Counter
+    this.reg.IR = 0; // Instruction Register
 
-        // Special-purpose registers
-        this.reg.PC = 0; // Program Counter
-        this.reg.IR = 0; // Instruction Register
-
-        this.setupBranchTable();
+    this.setupBranchTable();
         
-        this.reg = this.ram.read(this.reg.PC + 1);
-        this.val = this.ram.read(this.reg.PC + 2);
-        this.handler = this.branchTable[this.reg.IR];
-    }
+    this.reg = this.ram.read(this.reg.PC + 1);
+    this.val = this.ram.read(this.reg.PC + 2);
+    this.handler = this.branchTable[this.reg.IR];
+  }
 	
-	/**
-	 * Sets up the branch table
-	 */
-	setupBranchTable() {
-		let bt = {};
+  /**
+  * Sets up the branch table
+  */
+  setupBranchTable() {
+    let bt = {};
+    
+    bt[HLT] = this.HLT;
+    // !!! IMPLEMENT ME
+    bt[LDI] = this.LDI;
+    bt[MUL] = this.MUL;
+    bt[PRN] = this.PRN;
+    bt[PSH] = this.PSH;
+    bt[POP] = this.POP;
 
-        bt[HLT] = this.HLT;
-        // !!! IMPLEMENT ME
-        bt[LDI] = this.LDI;
-        bt[MUL] = this.MUL;
-        bt[PRN] = this.PRN;
-        bt[PSH] = this.PSH;
+	this.branchTable = bt;
+  }
 
-		this.branchTable = bt;
-	}
-
-    /**
-     * Store value in memory address, useful for program loading
-     */
-    poke(address, value) {
-        this.ram.write(address, value);
-    }
+  /**
+  * Store value in memory address, useful for program loading
+  */
+  poke(address, value) {
+    this.ram.write(address, value);
+  }
 
     /**
      * Starts the clock ticking on the CPU
@@ -100,8 +101,10 @@ class CPU {
   tick() {
   // !!! IMPLEMENT ME
   // Load the instruction register from the current PC
-    
-  // Debugging output    //console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
+  this.reg.IR = this.ram.read(this.reg.PC);
+
+  // Debugging output    
+  console.log(`${this.reg.PC}: ${this.reg.IR.toString(2)}`);
 
   // Based on the value in the Instruction Register, jump to the
   // appropriate hander in the branchTable     
@@ -113,7 +116,7 @@ class CPU {
     this.stopClock();
     return;
   }
-
+  
    // We need to use call() so we can set the "this" value inside
    // the handler (otherwise it will be undefined in the handler)
    
@@ -121,7 +124,6 @@ class CPU {
   }
 
     // INSTRUCTION HANDLER CODE:
-
 
     /**
      * HLT

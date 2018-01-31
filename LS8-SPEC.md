@@ -120,7 +120,9 @@ Machine code:
 
 Calls a subroutine (function) at the address stored in the register.
 
-Before the call is made, the address of the _next_ instruction that will execute is pushed onto the stack.
+1. The address of the _next_ instruction that will execute is pushed onto the
+   stack.
+2. The PC is set to the address stored in the given register.
 
 Machine code:
 ```
@@ -306,6 +308,9 @@ Machine code:
 
 Pop the value at the top of the stack into the given register.
 
+1. Copy the value from the address pointed to by SP to the given register.
+2. Increment SP.
+
 Machine code:
 ```
 00001011 00000rrr
@@ -338,6 +343,10 @@ Machine code:
 `PUSH register`
 
 Push the given register on the stack.
+
+1. Decrement the SP.
+2. Copy the value in the given register to the address pointed to by
+   SP.
 
 Machine code:
 ```
